@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"log"
 	"github.com/gorilla/websocket"
+	"fmt"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
@@ -44,7 +45,7 @@ func main() {
 			}
 			switch messageType {
 			case websocket.TextMessage:
-				log.Printf("%s", message)
+				fmt.Printf("%s", message)
 			}
 		}
 
