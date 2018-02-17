@@ -58,6 +58,7 @@ func tail(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						log.Println("file open error : ", err)
 						c.WriteMessage(websocket.TextMessage, []byte("file not found"))
+						f.Close()
 						done <- true
 						return
 					}
@@ -67,8 +68,9 @@ func tail(w http.ResponseWriter, r *http.Request) {
 						data := buffer[:numRead]
 						err = c.WriteMessage(websocket.TextMessage, data)
 						if err != nil {
-							log.Println("write:", err)
-							break
+							f.Close()
+							done <- true
+							return
 						}
 						offset = offset + int64(numRead)
 						buffer := make([]byte, 1024)
@@ -88,12 +90,11 @@ func tail(w http.ResponseWriter, r *http.Request) {
 	err = watcher.Add(filename)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
-
 
 	select {
 	case <-done:
-		c.Close()
 	}
 }
 

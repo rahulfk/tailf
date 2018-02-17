@@ -32,10 +32,10 @@ func main() {
 	done := make(chan bool);
 
 	go func() {
-		defer c.Close()
 		err = c.WriteMessage(websocket.TextMessage, []byte(*path))
 		if err != nil {
-			log.Println("write:", err)
+			done <- true
+			log.Println("error : ", err)
 			return
 		}
 		for {
@@ -48,20 +48,11 @@ func main() {
 				fmt.Printf("%s", message)
 			}
 		}
-
 	}()
-
 
 	select {
 	case <-interrupt:
-		log.Println("interrupt")
-		err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-		if err != nil {
-			log.Println("write close:", err)
-			return
-		}
-		c.Close()
-		return
+		c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	case <- done:
 	}
 
